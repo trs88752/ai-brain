@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Second Brain | PDF Files</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pdf.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+    <style>
+        .files-only-note{margin:0 0 24px;padding:16px 20px;border:1px solid rgba(120,180,255,.28);border-radius:16px;background:rgba(20,55,110,.28);color:#dcecff}
+        .files-only-note strong{color:#fff}
+    </style>
+</head>
+<body class="module-page module-pdf">
+<div class="container">
+    <div class="header">
+        <div class="header-title">
+            <div class="title-icon"><i class="fa-solid fa-folder-open"></i></div>
+            <div><h1>PDF Files</h1><p>Your uploaded PDF files</p></div>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="home"><i class="fa-solid fa-house"></i> Dashboard</a>
+    </div>
+
+    <div class="files-only-note"><strong><i class="fa-solid fa-circle-info"></i> PDF Files</strong><br>இந்த பகுதியில் நீங்கள் upload செய்த PDF files மட்டும் காட்டப்படும். Upload, AI Ask, AI Speak options PDF Library module-ல் உள்ளன.</div>
+
+    <div class="section-heading">
+        <div><h2><i class="fa-solid fa-file-pdf"></i> Uploaded PDFs</h2><p>Open, download or delete your saved PDF files.</p></div>
+        <span class="pdf-count">{{ pdfs|length }} PDF{% if pdfs|length != 1 %}s{% endif %}</span>
+    </div>
+
+    <div class="pdf-grid" id="pdfGrid">
+        {% for pdf in pdfs %}
+        <div class="pdf-card" data-name="{{ (pdf.original_name or pdf.filename)|lower }}">
+            <div class="pdf-card-top"><div class="pdf-icon-box"><i class="fa-solid fa-file-pdf"></i></div><span class="pdf-badge">PDF</span></div>
+            <h3 title="{{ pdf.original_name or pdf.filename }}">{{ pdf.original_name or pdf.filename }}</h3>
+            {% if pdf.uploaded_at %}<p class="pdf-date"><i class="fa-regular fa-calendar"></i> {{ pdf.uploaded_at }}</p>{% endif %}
+            <div class="buttons">
+                <a href="{{ url_for('view_pdf', filename=pdf.filename) }}" target="_blank" class="download view-btn"><i class="fa-solid fa-eye"></i> Open PDF</a>
+                <a href="{{ url_for('download_pdf', filename=pdf.filename) }}" class="download"><i class="fa-solid fa-download"></i> Download</a>
+                <form action="{{ url_for('delete_pdf', id=pdf.id) }}" method="POST" style="display:inline"><button type="submit" class="delete" onclick="return confirm('Are you sure you want to delete this PDF?');"><i class="fa-solid fa-trash"></i> Delete</button></form>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="fa-solid fa-folder-open"></i><h3>No PDF files yet</h3><p>Upload a PDF from the PDF Library module.</p><a href="{{ url_for('pdf_library') }}" class="upload-btn">Go to PDF Library</a></div>
+        {% endfor %}
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+</html>

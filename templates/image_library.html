@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Second Brain | Image Library</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/images.css') }}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+<script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
+</head>
+
+<body class="module-page module-images">
+
+<div class="container">
+
+<div class="header">
+
+<h1>
+
+<i class="fa-solid fa-image"></i>
+
+Image Library
+
+</h1>
+
+<a href="/dashboard" class="home">
+
+<i class="fa-solid fa-house"></i>
+
+Dashboard
+
+</a>
+
+</div>
+
+<div class="upload-box">
+
+<form id="imageSearchForm" method="get" action="{{ url_for('image_library') }}" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap"><input id="imageSearch" name="q" value="{{ search_query or '' }}" placeholder="🔍 Search images..." autocomplete="off" style="flex:1;min-width:180px;padding:10px"><input id="imageDate" type="date" name="date" value="{{ selected_date or '' }}" style="padding:10px"><select id="imagePeriod" name="period" style="padding:10px"><option value="">All times</option><option value="morning" {% if selected_period=='morning' %}selected{% endif %}>Morning (6 AM–12 PM)</option><option value="afternoon" {% if selected_period=='afternoon' %}selected{% endif %}>Afternoon (12–5 PM)</option><option value="evening" {% if selected_period=='evening' %}selected{% endif %}>Evening (5–9 PM)</option><option value="night" {% if selected_period=='night' %}selected{% endif %}>Night (9 PM–6 AM)</option></select><button type="submit">Search</button></form>
+
+<form
+action="/upload-image"
+method="POST"
+enctype="multipart/form-data">
+
+<label class="choose">
+
+<i class="fa-solid fa-image"></i>
+
+Choose Image
+
+<input
+type="file"
+name="image"
+accept="image/*"
+required>
+
+</label>
+
+<button type="submit">
+
+<i class="fa-solid fa-cloud-arrow-up"></i>
+
+Upload Image
+
+</button>
+
+</form>
+
+</div>
+
+<div class="image-grid">
+
+{% for image in images %}
+
+<div class="image-card" data-search="{{ (image.original_name or image.filename)|lower }}" data-uploaded="{{ image.uploaded_at or '' }}">
+
+<img
+src="{{ url_for('view_image', filename=image.filename) }}"
+alt="Image">
+
+<h3>{{ image.filename }}</h3>
+<small>📅 {{ image.uploaded_at }} · 🗂️ Image</small>
+
+<form action="{{ url_for('api_image_question', image_id=image.id) }}" method="POST" class="ask-image" onsubmit="askImage(event,this)">
+<input name="question" placeholder="Ask about this image..." required>
+<select name="language" aria-label="Answer language"><option value="auto">Auto language</option><option value="Tamil">Tamil</option><option value="English">English</option></select>
+<button type="submit">🤖 Ask AI</button><button type="button" class="image-listen" hidden>🔊 Listen</button><button type="button" class="image-stop" hidden>⏹ Stop</button><p class="image-answer"></p>
+</form>
+
+<div class="buttons">
+
+<a
+href="{{ url_for('view_image', filename=image.filename) }}"
+target="_blank"
+class="view">
+
+<i class="fa-solid fa-eye"></i>
+
+View
+
+</a>
+
+<a
+href="/delete-image/{{ image.id }}"
+class="delete">
+
+<i class="fa-solid fa-trash"></i>
+
+Delete
+
+</a>
+
+</div>
+
+</div>
+
+<script>
+function imageAnswerLocale(text,language){if(language==='Tamil')return 'ta-IN';if(language==='English')return 'en-IN';return /[\u0B80-\u0BFF]/.test(text)?'ta-IN':'en-IN';}
+function formatImageAnswer(text){return window.AIFormatter ? window.AIFormatter.render(text) : String(text || '');}
+function stopImageAnswer(form){if(window.speechSynthesis)window.speechSynthesis.cancel();form.querySelector('.image-stop').hidden=true;}
+function listenImageAnswer(form){const out=form.querySelector('.image-answer'),text=out.textContent.trim(),stop=form.querySelector('.image-stop');if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){out.textContent='This in-app browser cannot play speech. Open AI Second Brain in Chrome or Edge to hear answers.';return;}if(!text||text==='AI is thinking...')return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=imageAnswerLocale(text,form.language.value);const voices=window.speechSynthesis.getVoices(),prefix=u.lang.slice(0,2).toLowerCase(),voice=(prefix==='ta'&&voices.find(item=>/valluvar/i.test(item.name)&&item.lang&&item.lang.toLowerCase().startsWith(prefix)))||voices.find(item=>item.lang&&item.lang.toLowerCase()===u.lang.toLowerCase())||voices.find(item=>item.lang&&item.lang.toLowerCase().startsWith(prefix));if(u.lang==='ta-IN'&&!voice){out.textContent='Tamil voice is installed, but this browser has not loaded it yet. Restart Chrome or Edge and try again.';return;}u.voice=voice||null;u.rate=.9;u.onstart=()=>{stop.hidden=false;};u.onend=()=>{stop.hidden=true;};u.onerror=()=>{stop.hidden=true;};window.speechSynthesis.speak(u);}
+async function askImage(e,form){e.preventDefault();stopImageAnswer(form);const out=form.querySelector('.image-answer'),listen=form.querySelector('.image-listen');out.textContent='AI is thinking...';listen.hidden=true;try{const r=await fetch(form.action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:form.question.value,language:form.language.value})});const d=await r.json();out.innerHTML=d.success?formatImageAnswer(d.answer):(d.message||'Unable to answer');if(d.success)listen.hidden=false;}catch(_){out.textContent='Unable to connect to Image AI service.';}}
+document.addEventListener('click',event=>{const form=event.target.closest('.ask-image');if(!form)return;if(event.target.closest('.image-listen'))listenImageAnswer(form);if(event.target.closest('.image-stop'))stopImageAnswer(form);});
+
+// Instant image filtering: results move to the front without reloading the page.
+(() => {
+  const search = document.getElementById('imageSearch');
+  const date = document.getElementById('imageDate');
+  const period = document.getElementById('imagePeriod');
+  const cards = [...document.querySelectorAll('.image-card')];
+  if (!search || !date || !period) return;
+  const getPeriod = value => {
+    const hour = new Date(value.replace(' ', 'T')).getHours();
+    if (Number.isNaN(hour)) return '';
+    if (hour >= 6 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 17) return 'afternoon';
+    if (hour >= 17 && hour < 21) return 'evening';
+    return 'night';
+  };
+  const filter = () => {
+    const q = search.value.trim().toLowerCase();
+    const d = date.value;
+    const p = period.value;
+    cards.forEach(card => {
+      const textMatch = !q || card.dataset.search.includes(q);
+      const dateMatch = !d || card.dataset.uploaded.startsWith(d);
+      const periodMatch = !p || getPeriod(card.dataset.uploaded) === p;
+      card.style.display = textMatch && dateMatch && periodMatch ? '' : 'none';
+    });
+  };
+  search.addEventListener('input', filter);
+  date.addEventListener('change', filter);
+  period.addEventListener('change', filter);
+  document.getElementById('imageSearchForm').addEventListener('submit', event => { event.preventDefault(); filter(); });
+  filter();
+})();
+</script>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+
+</html>

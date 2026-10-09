@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Second Brain | Create Note</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/notes.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+</head>
+<body class="module-page module-notes">
+  <main class="container">
+    <header class="header"><h1><i class="fa-solid fa-pen-to-square"></i> Create Note</h1><a href="{{ url_for('notes') }}" class="back"><i class="fa-solid fa-note-sticky"></i> My Notes</a></header>
+    <section class="add-note">
+      <h2>Write a new note</h2><p>Save your ideas, study material, and important information.</p>
+      <form action="{{ url_for('save_note') }}" method="POST">
+        <input type="text" name="title" placeholder="Enter note title" required>
+        <textarea name="content" placeholder="Write your note here..." required></textarea>
+        <button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Note</button>
+      </form>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Second Brain | AI Assistant</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #111827; color: #fff; }
+    .page { max-width: 760px; margin: auto; padding: 45px 20px; }
+    .panel { padding: 25px; background: #ffffff18; border-radius: 16px; }
+    textarea, select { width: 100%; box-sizing: border-box; padding: 14px; border-radius: 10px; border: 0; margin: 8px 0; font: inherit; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    button { padding: 12px 16px; border: 0; border-radius: 9px; cursor: pointer; }
+    .ask { background: #fbbf24; color: #111827; font-weight: 700; }
+    .answer { margin-top: 20px; line-height: 1.75; overflow-wrap: anywhere; }
+    .answer h3 { color: #fbbf24; margin: 18px 0 9px; }
+    .answer p { margin: 9px 0; }
+    .answer ul, .answer ol { margin: 9px 0; padding-left: 25px; }
+    .answer li { margin: 7px 0; }
+    .answer strong { color: #67e8f9; text-decoration: underline; text-underline-offset: 3px; }
+    .back { float: right; color: #111827; background: #fff; padding: 10px; border-radius: 9px; text-decoration: none; }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+  <script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
+</head>
+<body class="module-page module-voice">
+  <main class="page">
+    <a class="back" href="{{ url_for('dashboard') }}">Dashboard</a>
+    <h1>🔊 AI Assistant</h1>
+    <p>Type a question. AI can read its answer aloud.</p>
+    <section class="panel">
+      <select id="language">
+        <option value="auto">Auto language</option>
+        <option value="Tamil">Tamil</option>
+        <option value="English">English</option>
+      </select>
+      <p id="languageStatus" aria-live="polite">Answer language: Auto</p>
+      <textarea id="message" placeholder="Type your question in Tamil or English..."></textarea>
+      <div class="actions">
+        <button id="ask" class="ask">Ask AI</button>
+        <button id="read" hidden>🔊 Listen to answer</button>
+        <button id="stop" hidden>⏹ Stop</button>
+      </div>
+      <p id="status" aria-live="polite"></p>
+      <div id="answer" class="answer"></div>
+    </section>
+  </main>
+  <script>
+    const message = document.getElementById('message');
+    const language = document.getElementById('language');
+    const languageStatus = document.getElementById('languageStatus');
+    const answer = document.getElementById('answer');
+    const status = document.getElementById('status');
+    const listen = document.getElementById('read');
+    const stop = document.getElementById('stop');
+
+    language.addEventListener('change', () => {
+      speechSynthesis.cancel();
+      languageStatus.textContent = `Answer language: ${language.options[language.selectedIndex].text}`;
+    });
+
+    document.getElementById('ask').onclick = async () => {
+      if (!message.value.trim()) { status.textContent = 'Type a question first.'; return; }
+      status.textContent = 'AI is thinking…';
+      try {
+        const response = await fetch('{{ url_for("api_chat") }}', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: message.value, language: language.value })
+        });
+        const data = await response.json();
+        if (data.success) { answer.innerHTML = formatAnswer(data.response); listen.hidden = false; status.textContent = ''; }
+        else { status.textContent = data.message || 'AI error'; }
+      } catch { status.textContent = 'Unable to connect to AI service.'; }
+    };
+
+    function formatAnswer(text) { return window.AIFormatter ? window.AIFormatter.render(text) : String(text || ''); }
+
+    listen.onclick = () => {
+      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+        status.textContent = 'This in-app browser cannot play speech. Open AI Second Brain in Chrome or Edge to hear answers.';
+        return;
+      }
+      if (!answer.textContent.trim()) return;
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(answer.textContent);
+      utterance.lang = language.value === 'Tamil' ? 'ta-IN'
+        : language.value === 'English' ? 'en-IN'
+        : /[\u0B80-\u0BFF]/.test(answer.textContent) ? 'ta-IN' : 'en-IN';
+      const voices = speechSynthesis.getVoices();
+      const prefix = utterance.lang.slice(0, 2).toLowerCase();
+      const selectedVoice = (prefix === 'ta' && voices.find(voice => /valluvar/i.test(voice.name) && voice.lang && voice.lang.toLowerCase().startsWith(prefix)))
+        || voices.find(voice => voice.lang && voice.lang.toLowerCase() === utterance.lang.toLowerCase())
+        || voices.find(voice => voice.lang && voice.lang.toLowerCase().startsWith(prefix));
+      if (utterance.lang === 'ta-IN' && !selectedVoice) {
+        status.textContent = 'Tamil voice is installed, but this browser has not loaded it yet. Restart Chrome or Edge and try again.';
+        return;
+      }
+      utterance.voice = selectedVoice || null;
+      utterance.rate = 0.9;
+      stop.hidden = false;
+      utterance.onstart = () => { status.textContent = 'Speaking answer…'; };
+      utterance.onend = utterance.onerror = () => { stop.hidden = true; status.textContent = ''; };
+      speechSynthesis.speak(utterance);
+    };
+
+    stop.onclick = () => { speechSynthesis.cancel(); stop.hidden = true; status.textContent = 'Voice stopped.'; };
+  </script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Second Brain | Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css', v='20261004-settings-2') }}">
+</head>
+<body class="module-page module-settings">
+<main class="container settings-container">
+    <header class="header">
+        <div>
+            <p class="settings-eyebrow">PERSONALIZE YOUR WORKSPACE</p>
+            <h1><i class="fa-solid fa-sliders"></i> Settings</h1>
+            <p class="settings-subtitle">Choose how AI Second Brain looks and how reminder alerts behave.</p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="home"><i class="fa-solid fa-house"></i> Dashboard</a>
+    </header>
+
+    <form id="settingsForm" class="settings-form">
+        <section class="card settings-card" aria-labelledby="appearanceTitle">
+            <div class="settings-section-heading">
+                <span class="settings-icon"><i class="fa-solid fa-palette"></i></span>
+                <div><h2 id="appearanceTitle">Appearance</h2><p>Personalize the look across your workspace.</p></div>
+            </div>
+
+            <div class="settings-row">
+                <div class="settings-copy"><label for="darkMode">Dark mode</label><p>Use a dark canvas that is comfortable in low light.</p></div>
+                <label class="settings-switch" aria-label="Dark mode">
+                    <input id="darkMode" type="checkbox" {% if settings.theme == 'dark' %}checked{% endif %}>
+                    <span class="switch-track" aria-hidden="true"></span>
+                </label>
+            </div>
+
+            <div class="settings-row">
+                <div class="settings-copy"><label for="themeStyle">Theme style</label><p>Pick an accent palette for cards, navigation, and buttons.</p></div>
+                <select id="themeStyle" class="settings-select">
+                    <option value="aurora" {% if settings.theme_style == 'aurora' %}selected{% endif %}>Aurora glow</option>
+                    <option value="midnight" {% if settings.theme_style == 'midnight' %}selected{% endif %}>Midnight blue</option>
+                    <option value="ocean" {% if settings.theme_style == 'ocean' %}selected{% endif %}>Ocean teal</option>
+                </select>
+            </div>
+
+            <div class="settings-row">
+                <div class="settings-copy"><label for="fontSize">Font size</label><p>Adjust reading text throughout the application.</p></div>
+                <select id="fontSize" class="settings-select">
+                    <option value="small" {% if settings.font_size == 'small' %}selected{% endif %}>Small</option>
+                    <option value="medium" {% if settings.font_size == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="large" {% if settings.font_size == 'large' %}selected{% endif %}>Large</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="card settings-card" aria-labelledby="reminderTitle">
+            <div class="settings-section-heading">
+                <span class="settings-icon settings-icon-bell"><i class="fa-solid fa-bell"></i></span>
+                <div><h2 id="reminderTitle">Reminder notifications</h2><p>Control scheduled browser and Windows reminder alerts.</p></div>
+            </div>
+            <div class="settings-row">
+                <div class="settings-copy"><label for="reminderNotifications">Notifications</label><p>When off, reminder records stay saved, but scheduled popups and tones are paused.</p></div>
+                <label class="settings-switch" aria-label="Reminder notifications">
+                    <input id="reminderNotifications" type="checkbox" {% if settings.notifications %}checked{% endif %}>
+                    <span class="switch-track" aria-hidden="true"></span>
+                </label>
+            </div>
+            <p class="settings-note"><i class="fa-solid fa-circle-info"></i> Browser alerts also require notification permission in your browser.</p>
+        </section>
+
+        <div class="settings-save-row">
+            <p id="settingsStatus" class="settings-status" role="status" aria-live="polite">Your preferences are saved to your account.</p>
+            <button id="saveSettings" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save preferences</button>
+        </div>
+    </form>
+
+    <section class="card settings-card about-card" aria-labelledby="aboutTitle">
+        <div class="settings-section-heading">
+            <span class="settings-icon settings-icon-about"><i class="fa-solid fa-brain"></i></span>
+            <div><h2 id="aboutTitle">About this application</h2><p>AI Second Brain</p></div>
+        </div>
+        <p class="about-description">A personal knowledge workspace for keeping notes, PDFs, images, AI conversations, and reminders together.</p>
+        <div class="about-features" aria-label="Application modules">
+            <span><i class="fa-solid fa-note-sticky"></i> Notes</span>
+            <span><i class="fa-solid fa-file-pdf"></i> PDF Library</span>
+            <span><i class="fa-solid fa-images"></i> Image Library</span>
+            <span><i class="fa-solid fa-robot"></i> AI Assistant</span>
+            <span><i class="fa-solid fa-bell"></i> Reminders</span>
+        </div>
+        <p class="about-footer">Built as a student project · Your saved workspace data remains in your account.</p>
+    </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script>
+(() => {
+    const form = document.getElementById('settingsForm');
+    const status = document.getElementById('settingsStatus');
+    const saveButton = document.getElementById('saveSettings');
+    const readPreferences = () => ({
+        theme: document.getElementById('darkMode').checked ? 'dark' : 'light',
+        theme_style: document.getElementById('themeStyle').value,
+        font_size: document.getElementById('fontSize').value,
+        notifications: document.getElementById('reminderNotifications').checked
+    });
+    const preview = () => window.applyUserPreferences?.(readPreferences(), false);
+
+    form.addEventListener('change', preview);
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        saveButton.disabled = true;
+        status.textContent = 'Saving your preferences…';
+        try {
+            const response = await fetch('{{ url_for("api_settings") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(readPreferences())
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Could not save settings.');
+            window.applyUserPreferences?.(data, true);
+            status.textContent = 'Preferences saved and applied across your workspace.';
+        } catch (error) {
+            status.textContent = error.message || 'Could not save settings. Please try again.';
+        } finally {
+            saveButton.disabled = false;
+        }
+    });
+})();
+</script>
+</body>
+</html>

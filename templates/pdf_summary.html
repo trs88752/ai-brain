@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>PDF AI Summary</title>
+
+<link rel="stylesheet"
+href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+<script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+
+    margin: 0;
+
+    font-family: Poppins, sans-serif;
+
+    background:
+    linear-gradient(
+        135deg,
+        #0f172a,
+        #1e1b4b,
+        #312e81
+    );
+
+    color: white;
+
+    min-height: 100vh;
+
+}
+
+.container {
+
+    width: 90%;
+
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 40px 0;
+
+}
+
+.header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 30px;
+
+}
+
+.header h1 {
+
+    margin: 0;
+
+}
+
+.btn {
+
+    padding: 12px 20px;
+
+    background: white;
+
+    color: #312e81;
+
+    text-decoration: none;
+
+    border-radius: 10px;
+
+    font-weight: 600;
+
+}
+
+.card {
+
+    background: rgba(255,255,255,0.10);
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    border-radius: 20px;
+
+    padding: 30px;
+
+    margin-bottom: 25px;
+
+    backdrop-filter: blur(15px);
+
+}
+
+.card h2 {
+
+    margin-top: 0;
+
+}
+
+.summary {
+
+    white-space: pre-wrap;
+
+    line-height: 1.8;
+
+}
+
+.text {
+
+    white-space: pre-wrap;
+
+    line-height: 1.7;
+
+    max-height: 500px;
+
+    overflow-y: auto;
+
+}
+
+.actions {
+
+    display: flex;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+
+}
+
+</style>
+
+</head>
+
+<body class="module-page module-pdf">
+
+<div class="container">
+
+<div class="header">
+
+<h1>
+📄 PDF AI Summary
+</h1>
+
+<a href="/pdf-library" class="btn">
+Back to PDF Library
+</a>
+
+</div>
+
+
+<div class="card">
+
+<h2>💬 Ask this PDF</h2>
+<div class="actions">
+<input id="pdfQuestion" placeholder="Ask this PDF in Tamil or English..." style="flex:1;min-width:260px;padding:12px;border-radius:10px;border:0;">
+<select id="pdfLanguage" style="padding:12px;border-radius:10px;border:0;">
+<option value="auto">Auto language</option><option value="Tamil">Tamil</option><option value="English">English</option>
+</select>
+<select id="voiceChoice" style="padding:12px;border-radius:10px;border:0;max-width:210px;"><option value="">Default clear voice</option></select>
+<button type="button" class="btn" id="askPdf">Ask AI</button>
+<button type="button" class="btn" id="listenAnswer" hidden>🔊 Listen to answer</button>
+<button type="button" class="btn" id="stopAnswer" hidden>⏹ Stop speaking</button>
+</div>
+<div id="pdfAnswer" class="summary" style="margin-top:18px;"></div>
+<div id="voiceStatus" style="margin-top:10px;opacity:.8;"></div>
+
+</div>
+
+{% if question_history %}<div class="card"><h2>🕘 PDF Question History</h2>{% for item in question_history %}<div style="border-top:1px solid #ffffff30;padding:14px 0"><strong>You:</strong><div>{{ item.question }}</div><strong>AI Second Brain:</strong><div class="summary">{{ item.answer }}</div><small>{{ item.created_at }}</small></div>{% endfor %}</div>{% endif %}
+
+<div class="card">
+
+<h2>
+📄 {{ original_name }}
+</h2>
+
+<div class="actions">
+
+<a
+href="/view-pdf/{{ filename }}"
+target="_blank"
+class="btn">
+
+👁 Open PDF
+
+</a>
+
+<a
+href="/download-pdf/{{ filename }}"
+class="btn">
+
+⬇ Download PDF
+
+</a>
+
+</div>
+
+<script>
+const q=document.getElementById('pdfQuestion'), lang=document.getElementById('pdfLanguage'), out=document.getElementById('pdfAnswer'), listen=document.getElementById('listenAnswer'), stopAnswer=document.getElementById('stopAnswer'), voiceChoice=document.getElementById('voiceChoice'), voiceStatus=document.getElementById('voiceStatus');
+const renderMarkdown=(text)=>window.AIFormatter ? window.AIFormatter.render(text) : escapeText(text);
+const escapeText=(text)=>text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const synth=window.speechSynthesis; const loadVoices=()=>{if(!synth)return;const voices=synth.getVoices().filter(v=>/en-IN|ta-IN|en-US|en-GB/i.test(v.lang));voiceChoice.innerHTML='<option value="">Default clear voice</option>';voices.forEach((v,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=v.name+' ('+v.lang+')';voiceChoice.appendChild(o);});voiceChoice._voices=voices;};loadVoices();if(synth)synth.onvoiceschanged=loadVoices;
+const speechLanguage=(text)=>{if(lang.value==='Tamil')return 'ta-IN';if(lang.value==='English')return 'en-IN';return /[\u0B80-\u0BFF]/.test(text)?'ta-IN':'en-IN';};
+const recognitionLanguage=()=>lang.value==='Tamil'?'ta-IN':'en-IN';
+lang.addEventListener('change',()=>{if(synth)synth.cancel();voiceStatus.textContent=`Voice language: ${lang.options[lang.selectedIndex].text}`;setTimeout(()=>voiceStatus.textContent='',1800);});
+const preferredVoice=(locale)=>{const voices=(voiceChoice._voices||[]),prefix=locale.toLowerCase().slice(0,2);return (prefix==='ta'&&voices.find(v=>/valluvar/i.test(v.name)&&v.lang&&v.lang.toLowerCase().startsWith(prefix)))||voices.find(v=>v.lang&&v.lang.toLowerCase()===locale.toLowerCase())||voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(prefix))||null;};
+const speakPdfAnswer=()=>{if(!synth||!window.SpeechSynthesisUtterance){voiceStatus.textContent='This in-app browser cannot play speech. Open AI Second Brain in Chrome or Edge to hear answers.';return;}if(!out.textContent.trim())return;synth.cancel();const u=new SpeechSynthesisUtterance(out.textContent);u.lang=speechLanguage(out.textContent);u.rate=.9;u.pitch=1;const voices=voiceChoice._voices||[];const selected=voiceChoice.value?voices[Number(voiceChoice.value)]:null;u.voice=selected&&selected.lang.toLowerCase().startsWith(u.lang.slice(0,2).toLowerCase())?selected:preferredVoice(u.lang);if(u.lang==='ta-IN'&&!u.voice){voiceStatus.textContent='Tamil voice is installed, but this browser has not loaded it yet. Restart Chrome or Edge and try again.';return;}stopAnswer.hidden=false;u.onstart=()=>voiceStatus.textContent='Speaking answer…';u.onend=()=>{stopAnswer.hidden=true;voiceStatus.textContent='';};u.onerror=()=>{stopAnswer.hidden=true;voiceStatus.textContent='Voice playback failed. Try Chrome or Edge.';};synth.speak(u);};
+document.getElementById('askPdf').onclick=async()=>{if(!q.value.trim())return;const question=q.value.trim();out.innerHTML='<div class="pdf-question"><strong>You:</strong><br>'+escapeText(question)+'</div><div class="pdf-answer">AI is thinking...</div>';listen.hidden=true;const r=await fetch('{{ url_for("api_pdf_question", pdf_id=pdf_id) }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:question,language:lang.value})});const d=await r.json();out.innerHTML='<div class="pdf-question"><strong>You:</strong><br>'+escapeText(question)+'</div><div class="pdf-answer"><strong>AI Second Brain:</strong><br>'+renderMarkdown(d.success?d.answer:(d.message||'Unable to answer.'))+'</div>';if(d.success){listen.hidden=false;}q.value='';};
+listen.onclick=()=>{if(!synth||!window.SpeechSynthesisUtterance){voiceStatus.textContent='Voice output is not supported in this browser. Open the app in Chrome or Edge.';return;}if(!out.textContent.trim()||out.textContent==='AI is thinking...'){voiceStatus.textContent='Ask the PDF first, then press Listen to answer.';return;}speakPdfAnswer();};
+stopAnswer.onclick=()=>{if(synth)synth.cancel();stopAnswer.hidden=true;voiceStatus.textContent='Voice stopped.';};
+</script>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+🤖 AI Summary
+</h2>
+
+<div class="summary">
+
+{{ summary }}
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+📝 Extracted PDF Text
+</h2>
+
+<div class="text">
+
+{{ extracted_text }}
+
+</div>
+
+</div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+
+</html>

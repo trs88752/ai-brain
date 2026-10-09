@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Second Brain | Reminders</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/reminder.css') }}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+
+</head>
+
+<body class="module-page module-reminders" data-reminders-enabled="{{ 1 if reminders_enabled else 0 }}">
+
+<div class="container">
+
+<div class="header">
+
+<h1>
+
+<i class="fa-solid fa-bell"></i>
+
+Smart Reminders
+
+</h1>
+
+<a href="/dashboard" class="home">
+
+<i class="fa-solid fa-house"></i>
+
+Dashboard
+
+</a>
+
+</div>
+
+<div class="reminder-form">
+
+<form action="/save-reminder" method="POST" id="reminderForm">
+
+<input
+type="text"
+name="title"
+placeholder="Reminder Title"
+required>
+
+<input
+type="date"
+name="date"
+required>
+
+<input
+type="time"
+name="time"
+required>
+
+<textarea name="description" placeholder="Reminder message" rows="3"></textarea>
+
+<select name="duration_days" aria-label="Reminder duration">
+<option value="1">One day only</option>
+<option value="2">Continue for 2 days</option>
+<option value="3">Continue for 3 days</option>
+<option value="4">Continue for 4 days</option>
+<option value="17">Continue for 17 days</option>
+<option value="7">Continue for 1 week</option>
+<option value="30">Continue for 1 month</option>
+</select>
+
+<input type="number" name="custom_duration_days" min="1" max="3650" placeholder="Custom days (e.g. 17)" aria-label="Custom duration in days">
+
+<label class="repeat-toggle"><input type="checkbox" name="repeat_enabled" value="1"> Send daily during duration</label>
+
+<button type="submit">
+
+<i class="fa-solid fa-plus"></i>
+
+Add Reminder
+
+</button>
+
+</form>
+
+</div>
+
+<div class="alert-control" aria-live="polite">
+<div><strong><i class="fa-solid fa-bell"></i> Reminder alerts</strong><p id="notificationStatus">Enable alerts once to receive browser notifications and an in-page alert.</p></div>
+<button type="button" id="enableNotifications">Enable alerts</button>
+<button type="button" id="testReminderNotification">Test popup &amp; sound</button>
+</div>
+
+<div class="due-alert" id="dueAlert" hidden role="alert">
+<div><i class="fa-solid fa-bell"></i><div><strong id="dueTitle">Reminder due</strong><p id="dueMessage"></p></div></div>
+<button type="button" id="dismissDueAlert">Dismiss</button>
+</div>
+
+<div class="reminder-grid">
+
+{% for reminder in reminders %}
+
+<div class="reminder-card" data-id="{{ reminder.id }}" data-date="{{ reminder.reminder_date }}" data-time="{{ reminder.reminder_time }}" data-duration="{{ reminder.duration_days or 1 }}" data-repeat="{{ reminder.repeat_enabled or 0 }}" data-title="{{ reminder.title|e }}" data-description="{{ reminder.description|e }}">
+
+<div class="icon">
+
+<i class="fa-solid fa-calendar-check"></i>
+
+</div>
+
+<h2>{{ reminder.title }}</h2>
+
+<p>
+
+<i class="fa-solid fa-calendar-days"></i>
+
+{{ reminder.reminder_date }}
+
+</p>
+
+<p>
+
+<i class="fa-solid fa-clock"></i>
+
+{{ reminder.reminder_time }}
+
+</p>
+
+<p class="reminder-duration">⏳ {{ 'Daily for ' ~ (reminder.duration_days or 1) ~ ' day(s)' if reminder.repeat_enabled else 'One-time reminder' }}</p>
+
+<a
+href="/delete-reminder/{{ reminder.id }}"
+class="delete">
+
+<i class="fa-solid fa-trash"></i>
+
+Delete
+
+</a>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+<script>
+const notificationStatus = document.getElementById('notificationStatus');
+const enableNotifications = document.getElementById('enableNotifications');
+const dueAlert = document.getElementById('dueAlert');
+let alertAudio;
+
+function updateNotificationStatus() {
+  if (document.body.dataset.remindersEnabled === '0') { notificationStatus.textContent = 'Reminder notifications are turned off in Settings. Your saved reminders are unchanged.'; enableNotifications.textContent = 'Turn on in Settings'; enableNotifications.disabled = true; return; }
+  if (!('Notification' in window)) { notificationStatus.textContent = 'This browser does not support notifications. In-page alerts will still work.'; return; }
+  if (Notification.permission === 'granted') { notificationStatus.textContent = 'Browser alerts are enabled. Keep this page open for scheduled alerts.'; enableNotifications.textContent = 'Alerts enabled'; enableNotifications.disabled = true; return; }
+  if (Notification.permission === 'denied') { notificationStatus.textContent = 'Browser alerts are blocked. Allow notifications in browser settings; in-page alerts still work.'; enableNotifications.textContent = 'Alerts blocked'; return; }
+  notificationStatus.textContent = 'Enable alerts once to receive browser notifications and an in-page alert.';
+}
+
+enableNotifications.addEventListener('click', async () => {
+  try { if ('Notification' in window) await Notification.requestPermission(); } catch (_) {}
+  try { alertAudio = new (window.AudioContext || window.webkitAudioContext)(); await alertAudio.resume(); } catch (_) {}
+  updateNotificationStatus();
+});
+
+document.getElementById('testReminderNotification').addEventListener('click', async () => {
+  const testButton = document.getElementById('testReminderNotification');
+  testButton.disabled = true;
+  notificationStatus.textContent = 'Sending Windows test popup…';
+  try {
+    const response = await fetch('/api/reminders/test-notification', { method: 'POST' });
+    const data = await response.json();
+    notificationStatus.textContent = data.message || 'Test notification finished.';
+  } catch (_) {
+    notificationStatus.textContent = 'Could not contact the reminder notification service.';
+  } finally {
+    setTimeout(() => { testButton.disabled = false; }, 1200);
+  }
+});
+
+function playAlertTone() {
+  if (!alertAudio) return;
+  try { const oscillator = alertAudio.createOscillator(), gain = alertAudio.createGain(); oscillator.frequency.value = 880; gain.gain.setValueAtTime(.12, alertAudio.currentTime); gain.gain.exponentialRampToValueAtTime(.001, alertAudio.currentTime + .55); oscillator.connect(gain).connect(alertAudio.destination); oscillator.start(); oscillator.stop(alertAudio.currentTime + .55); } catch (_) {}
+}
+
+function showDueAlert(card) {
+  if (document.body.dataset.remindersEnabled === '0') return;
+  document.getElementById('dueTitle').textContent = card.dataset.title || 'Reminder due';
+  document.getElementById('dueMessage').textContent = card.dataset.description || 'Your scheduled reminder is due now.';
+  dueAlert.hidden = false;
+  playAlertTone();
+  if ('Notification' in window && Notification.permission === 'granted') new Notification(card.dataset.title || 'Reminder due', { body: card.dataset.description || 'Your scheduled reminder is due now.', tag: `ai-second-brain-${card.dataset.id}` });
+}
+
+document.getElementById('dismissDueAlert').addEventListener('click', () => { dueAlert.hidden = true; });
+
+function checkReminders() {
+  if (document.body.dataset.remindersEnabled === '0') return;
+  const now = new Date();
+  document.querySelectorAll('.reminder-card[data-date]').forEach(card => {
+    const start = new Date(`${card.dataset.date}T${card.dataset.time || '00:00'}`);
+    if (Number.isNaN(start.getTime()) || now < start) return;
+    const days = Math.max(1, parseInt(card.dataset.duration || '1', 10));
+    const repeat = card.dataset.repeat === '1';
+    const dayOffset = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(start.getFullYear(), start.getMonth(), start.getDate())) / 86400000);
+    if (dayOffset < 0 || (repeat ? dayOffset >= days : dayOffset !== 0)) return;
+    const dueToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), start.getHours(), start.getMinutes());
+    if (now < dueToday) return;
+    const key = `ai-second-brain-reminder-${card.dataset.id}-${dayOffset}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    showDueAlert(card);
+  });
+}
+
+updateNotificationStatus();
+checkReminders();
+setInterval(checkReminders, 10000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkReminders(); });
+</script>
+
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+
+</html>

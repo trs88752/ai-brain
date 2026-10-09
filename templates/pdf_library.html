@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Second Brain | PDF Library</title>
+
+
+    <!-- Google Font -->
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+
+    <!-- Font Awesome -->
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+
+    <!-- PDF CSS -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/pdf.css') }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+<style>
+    /* Keep the per-PDF AI action visible beside Open, Download and Delete. */
+    .buttons .ask-ai-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-width: 104px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(196, 181, 253, .75);
+        background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+        color: #fff !important;
+        text-decoration: none;
+        font-weight: 600;
+        line-height: 1;
+        box-sizing: border-box;
+    }
+    .buttons .ask-ai-btn:hover { filter: brightness(1.12); transform: translateY(-2px); }
+</style>
+</head>
+
+
+<body class="module-page module-pdf">
+
+
+<div class="container">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="header">
+
+        <div class="header-title">
+
+            <div class="title-icon">
+
+                <i class="fa-solid fa-file-pdf"></i>
+
+            </div>
+
+            <div>
+
+                <h1>PDF Library</h1>
+
+                <p>
+                    Store, read and summarize your PDF documents
+                    with AI.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a href="{{ url_for('dashboard') }}"
+           class="home">
+
+            <i class="fa-solid fa-house"></i>
+
+            Dashboard
+
+        </a>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SEARCH
+    ====================================================== -->
+
+    <div class="search-box">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+            type="text"
+            id="pdfSearch"
+            placeholder="Search your PDF documents...">
+
+    </div>
+
+
+
+    <!-- =====================================================
+         UPLOAD PDF
+    ====================================================== -->
+
+    <div class="upload-box">
+
+        <div class="upload-content">
+
+            <div class="upload-icon">
+
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+
+            </div>
+
+
+            <div class="upload-info">
+
+                <h2>
+                    Upload a PDF
+                </h2>
+
+                <p>
+                    Upload your document and let AI extract
+                    the text and create a smart summary.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form
+            action="{{ url_for('pdf_summary') }}"
+            method="POST"
+            enctype="multipart/form-data"
+            id="pdfUploadForm">
+
+
+            <label class="choose">
+
+                <i class="fa-solid fa-file-arrow-up"></i>
+
+                <span id="fileName">
+                    Choose PDF
+                </span>
+
+                <input
+                    type="file"
+                    name="pdf"
+                    id="pdfInput"
+                    accept=".pdf,application/pdf"
+                    required>
+
+            </label>
+
+
+            <button
+                type="submit"
+                class="upload-btn"
+                id="uploadBtn">
+
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                Upload & Summarize
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         PDF LIBRARY
+    ====================================================== -->
+
+    <div class="section-heading">
+
+        <div>
+
+            <h2>
+                <i class="fa-solid fa-layer-group"></i>
+
+                Your Documents
+            </h2>
+
+            <p>
+                Open, download or manage your PDFs.
+            </p>
+
+        </div>
+
+
+        <span class="pdf-count">
+
+            {{ pdfs|length }}
+
+            PDF{% if pdfs|length != 1 %}s{% endif %}
+
+        </span>
+
+    </div>
+
+
+
+    <div class="pdf-grid"
+         id="pdfGrid">
+
+
+        {% if pdfs %}
+
+
+            {% for pdf in pdfs %}
+
+
+            <!-- =================================================
+                 PDF CARD
+            ================================================== -->
+
+            <div class="pdf-card"
+                 data-name="{{ (pdf.original_name or pdf.filename)|lower }}">
+
+
+                <!-- PDF ICON -->
+
+                <div class="pdf-card-top">
+
+                    <div class="pdf-icon-box">
+
+                        <i class="fa-solid fa-file-pdf"></i>
+
+                    </div>
+
+
+                    <span class="pdf-badge">
+
+                        PDF
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- PDF NAME -->
+
+                <h3
+                    title="{{ pdf.original_name or pdf.filename }}">
+
+                    {{ pdf.original_name or pdf.filename }}
+
+                </h3>
+
+
+
+                <!-- UPLOAD DATE -->
+
+                {% if pdf.uploaded_at %}
+
+                <p class="pdf-date">
+
+                    <i class="fa-regular fa-calendar"></i>
+
+                    {{ pdf.uploaded_at }}
+
+                </p>
+
+                {% endif %}
+
+
+
+                <!-- ACTIONS -->
+
+                <div class="buttons">
+
+
+                    <!-- ASK THIS PDF: text questions only; Listen/Stop are on its AI page -->
+                    <a href="{{ url_for('pdf_ai_page', pdf_id=pdf.id) }}" class="ask-ai-btn" title="Ask questions about this PDF">
+                        <i class="fa-solid fa-robot"></i><span>Ask AI</span>
+                    </a>
+                    <!-- OPEN PDF -->
+
+                    <a
+                        href="{{ url_for('view_pdf', filename=pdf.filename) }}"
+                        target="_blank"
+                        class="download view-btn">
+
+                        <i class="fa-solid fa-eye"></i>
+
+                        Open PDF
+
+                    </a>
+
+                    <!-- DOWNLOAD -->
+
+                    <a
+                        href="{{ url_for('download_pdf', filename=pdf.filename) }}"
+                        class="download">
+
+                        <i class="fa-solid fa-download"></i>
+
+                        Download
+
+                    </a>
+
+
+
+                    <!-- DELETE -->
+
+                    <form action="{{ url_for('delete_pdf', id=pdf.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="delete" onclick="return confirm('Are you sure you want to delete this PDF?');">
+                            <i class="fa-solid fa-trash"></i>
+                            Delete
+                        </button>
+                    </form>
+
+                </div>
+
+
+            </div>
+
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+            <!-- =================================================
+                 EMPTY STATE
+            ================================================== -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="fa-solid fa-file-circle-plus"></i>
+
+                </div>
+
+
+                <h2>
+                    No PDFs Yet
+                </h2>
+
+
+                <p>
+                    Upload your first PDF to start building
+                    your AI-powered knowledge library.
+                </p>
+
+
+                <label class="empty-upload-btn">
+
+                    <i class="fa-solid fa-upload"></i>
+
+                    Upload Your First PDF
+
+                    <input
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onchange="selectFromEmpty(this)">
+
+                </label>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         NO SEARCH RESULT
+    ====================================================== -->
+
+    <div id="noResults"
+         class="no-results"
+         style="display:none;">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <h3>
+            No PDF Found
+        </h3>
+
+        <p>
+            Try searching with another PDF name.
+        </p>
+
+    </div>
+
+
+
+</div>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+
+/* =========================================================
+   PDF FILE NAME
+========================================================= */
+
+const pdfInput =
+    document.getElementById("pdfInput");
+
+const fileName =
+    document.getElementById("fileName");
+
+
+if (pdfInput) {
+
+    pdfInput.addEventListener(
+        "change",
+        function () {
+
+            if (this.files.length > 0) {
+
+                fileName.innerText =
+                    this.files[0].name;
+
+            } else {
+
+                fileName.innerText =
+                    "Choose PDF";
+
+            }
+
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   UPLOAD BUTTON
+========================================================= */
+
+const uploadForm =
+    document.getElementById("pdfUploadForm");
+
+const uploadBtn =
+    document.getElementById("uploadBtn");
+
+
+if (uploadForm) {
+
+    uploadForm.addEventListener(
+        "submit",
+        function () {
+
+            uploadBtn.innerHTML =
+                '<i class="fa-solid fa-spinner fa-spin"></i> Processing PDF...';
+
+            uploadBtn.disabled = true;
+
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   PDF SEARCH
+========================================================= */
+
+const searchInput =
+    document.getElementById("pdfSearch");
+
+const cards =
+    document.querySelectorAll(".pdf-card");
+
+const noResults =
+    document.getElementById("noResults");
+
+
+if (searchInput) {
+
+    searchInput.addEventListener(
+        "input",
+        function () {
+
+            const searchValue =
+                this.value.toLowerCase().trim();
+
+            let found = 0;
+
+
+            cards.forEach(function (card) {
+
+                const name =
+                    card.getAttribute("data-name");
+
+
+                if (name.includes(searchValue)) {
+
+                    card.style.display =
+                        "block";
+
+                    found++;
+
+                } else {
+
+                    card.style.display =
+                        "none";
+
+                }
+
+            });
+
+
+            if (found === 0 && searchValue !== "") {
+
+                noResults.style.display =
+                    "block";
+
+            } else {
+
+                noResults.style.display =
+                    "none";
+
+            }
+
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   EMPTY STATE UPLOAD
+========================================================= */
+
+function selectFromEmpty(input) {
+
+    if (!input.files.length) {
+        return;
+    }
+
+
+    const file =
+        input.files[0];
+
+
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+
+        alert("Please select a PDF file.");
+
+        return;
+
+    }
+
+
+    /*
+       Put selected file into the main upload input
+       and submit the form.
+    */
+
+    if (pdfInput) {
+
+        const dataTransfer =
+            new DataTransfer();
+
+        dataTransfer.items.add(file);
+
+        pdfInput.files =
+            dataTransfer.files;
+
+        fileName.innerText =
+            file.name;
+
+
+        uploadForm.submit();
+
+    }
+
+}
+
+
+</script>
+
+
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+
+</html>
+

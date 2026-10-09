@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Second Brain | AI Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+    <script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+<body class="module-page module-chat">
+<div class="container">
+    <div class="header">
+        <h1>🤖 AI Assistant</h1>
+        <a href="{{ url_for('dashboard') }}" class="home">Dashboard</a>
+    </div>
+
+    <div class="chat-box">
+        <div class="messages" aria-live="polite" aria-relevant="additions text">
+            {% for chat in history %}
+            <div class="user">
+                <div class="bubble user-bubble">
+                    <h4>You</h4>
+                    <p>{{ chat.user_message }}</p>
+                </div>
+            </div>
+
+            <div class="ai">
+                <div class="bubble ai-bubble">
+                    <h4>AI Second Brain</h4>
+                <p class="markdown-response">{{ chat.ai_response }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <form id="chatForm" class="chat-form">
+            <input id="message" type="text" placeholder="Ask in Tamil or English..." required>
+            <button id="sendButton" type="submit">Send</button>
+        </form>
+        <div class="voice-tools">
+            <select id="language"><option value="auto">Auto language</option><option value="Tamil">Tamil</option><option value="English">English</option></select>
+            <span id="languageStatus" aria-live="polite">Answer language: Auto</span>
+            <button type="button" id="listenAnswer" hidden>🔊 Listen</button>
+            <button type="button" id="stopAnswer" hidden>⏹ Stop</button>
+        </div>
+        <p id="status"></p>
+    </div>
+</div>
+
+<div id="aiChatSidebarTools" class="ai-chat-sidebar-tools" hidden>
+    <a class="ai-chat-new-link" href="{{ url_for('ai_chat', new=1) }}">＋ New chat</a>
+    <button id="toggleChatHistory" class="ai-chat-history-toggle" type="button" aria-expanded="false" aria-controls="chatHistoryList">
+        <span>🕘 History</span><span class="ai-chat-history-count">{{ saved_history|length }}</span>
+    </button>
+    <nav id="chatHistoryList" class="ai-chat-history-list" aria-label="Saved AI chats" hidden>
+        {% for chat in saved_history|reverse %}
+        <a class="ai-chat-history-item{% if current_chat_id == chat.id %} active{% endif %}"
+           href="{{ url_for('ai_chat', history_id=chat.id) }}"
+           title="{{ chat.user_message }}"
+           {% if current_chat_id == chat.id %}aria-current="page"{% endif %}>
+            {{ chat.user_message|truncate(38, True, '…') }}
+        </a>
+        {% else %}
+        <p class="ai-chat-history-empty">No saved chats yet.</p>
+        {% endfor %}
+    </nav>
+</div>
+
+<script>
+const form = document.getElementById("chatForm");
+const input = document.getElementById("message");
+const button = document.getElementById("sendButton");
+const status = document.getElementById("status");
+const language = document.getElementById("language");
+const languageStatus = document.getElementById("languageStatus");
+const listenAnswer = document.getElementById("listenAnswer");
+const stopAnswer = document.getElementById("stopAnswer");
+const historyList = document.getElementById('chatHistoryList');
+const historyToggle = document.getElementById('toggleChatHistory');
+const historyCount = document.querySelector('.ai-chat-history-count');
+let latestAnswer = "";
+const synth = window.speechSynthesis;
+const speechLanguage = (text) => {
+    if (language.value === 'Tamil') return 'ta-IN';
+    if (language.value === 'English') return 'en-IN';
+    return /[\u0B80-\u0BFF]/.test(text) ? 'ta-IN' : 'en-IN';
+};
+const recognitionLanguage = () => language.value === 'Tamil' ? 'ta-IN' : (language.value === 'auto' && /^ta/i.test(navigator.language || '') ? 'ta-IN' : 'en-IN');
+language.addEventListener('change', () => { if (synth) synth.cancel(); const selected = language.options[language.selectedIndex].text; languageStatus.textContent = `Answer language: ${selected}`; status.textContent = `Language changed to ${selected}`; });
+const preferredVoice = (locale) => {
+    const voices = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
+    const prefix = locale.toLowerCase().slice(0, 2);
+    return (prefix === 'ta' && voices.find(v => /valluvar/i.test(v.name) && v.lang && v.lang.toLowerCase().startsWith(prefix)))
+        || voices.find(v => v.lang && v.lang.toLowerCase() === locale.toLowerCase())
+        || voices.find(v => v.lang && v.lang.toLowerCase().startsWith(prefix))
+        || null;
+};
+const messages = document.querySelector('.messages');
+const md = (text) => window.AIFormatter ? window.AIFormatter.render(text) : String(text || '');
+document.querySelectorAll('.markdown-response').forEach((el) => { el.innerHTML = md(el.textContent); });
+const addHistoryLink = (question, historyId) => {
+    if (!historyId || !historyList) return;
+    historyList.querySelector('.ai-chat-history-empty')?.remove();
+    const link = document.createElement('a');
+    link.className = 'ai-chat-history-item';
+    link.href = `{{ url_for('ai_chat') }}?history_id=${encodeURIComponent(historyId)}`;
+    link.title = question;
+    link.textContent = question.length > 38 ? `${question.slice(0, 37)}…` : question;
+    historyList.prepend(link);
+    if (historyCount) historyCount.textContent = String(Number(historyCount.textContent || 0) + 1);
+};
+historyToggle?.addEventListener('click', () => {
+    const isOpen = historyToggle.getAttribute('aria-expanded') === 'true';
+    historyToggle.setAttribute('aria-expanded', String(!isOpen));
+    historyList.hidden = isOpen;
+});
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = input.value.trim();
+    if (!message) return;
+
+    const user = document.createElement('div');
+    user.className = 'user';
+    user.innerHTML = '<div class="bubble user-bubble"><h4>You</h4><p></p></div>';
+    user.querySelector('p').textContent = message;
+
+    const ai = document.createElement('div');
+    ai.className = 'ai';
+    ai.innerHTML = '<div class="bubble ai-bubble"><h4>AI Second Brain</h4><div class="markdown-response answer-pending" role="status">Thinking…</div></div>';
+    const answerContent = ai.querySelector('.markdown-response');
+
+    messages.replaceChildren(user, ai);
+    messages.scrollTop = messages.scrollHeight;
+    input.value = '';
+    latestAnswer = '';
+    listenAnswer.hidden = true;
+    stopAnswer.hidden = true;
+    button.disabled = true;
+    status.textContent = "AI is thinking...";
+
+    try {
+        const response = await fetch("{{ url_for('api_chat') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: message, language: language.value })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            answerContent.textContent = data.message || "AI response failed. Please try again.";
+            answerContent.classList.remove('answer-pending');
+            answerContent.removeAttribute('role');
+            status.textContent = "";
+            return;
+        }
+
+        answerContent.classList.remove('answer-pending');
+        answerContent.removeAttribute('role');
+        answerContent.innerHTML = md(data.response);
+        latestAnswer = data.response;
+        listenAnswer.hidden = false;
+        status.textContent = '';
+        messages.scrollTop = messages.scrollHeight;
+        addHistoryLink(message, data.history_id);
+
+    } catch (error) {
+        answerContent.textContent = "Unable to connect to AI service. Please try again.";
+        answerContent.classList.remove('answer-pending');
+        answerContent.removeAttribute('role');
+        status.textContent = "";
+    } finally {
+        button.disabled = false;
+    }
+});
+listenAnswer.onclick=()=>{if(!synth||!window.SpeechSynthesisUtterance){status.textContent='This in-app browser cannot play speech. Open AI Second Brain in Chrome or Edge to hear answers.';return;}if(!latestAnswer)return;synth.cancel();const locale=speechLanguage(latestAnswer),voice=preferredVoice(locale);if(locale==='ta-IN'&&!voice){status.textContent='Tamil voice is installed, but this browser has not loaded it yet. Restart Chrome or Edge and try again.';return;}stopAnswer.hidden=false;const u=new SpeechSynthesisUtterance(latestAnswer);u.lang=locale;u.voice=voice;u.rate=.9;u.onend=()=>stopAnswer.hidden=true;u.onerror=()=>stopAnswer.hidden=true;synth.speak(u);};
+stopAnswer.onclick=()=>{if(synth)synth.cancel();stopAnswer.hidden=true;status.textContent='Voice stopped.';};
+</script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+</body>
+</html>

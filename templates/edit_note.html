@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Second Brain | Edit Note</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+  <style>.edit-card{max-width:820px;margin:auto}.edit-card input,.edit-card textarea{width:100%;margin:10px 0 18px}.edit-card textarea{min-height:260px;resize:vertical}.edit-card label{font-weight:600;color:#dce8fa}</style>
+</head>
+<body class="module-page module-notes"><main class="container"><header class="header"><h1><i class="fa-solid fa-pen"></i> Edit Note</h1><a class="back" href="{{ url_for('view_note', id=note.id) }}"><i class="fa-solid fa-arrow-left"></i> Back to Note</a></header><section class="card edit-card"><form method="POST"><label>Title</label><input name="title" value="{{ note.title }}" required><label>Content</label><textarea name="content" required>{{ note.content }}</textarea><button type="submit"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button></form></section></main><script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script></body></html>

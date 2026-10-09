@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | AI Second Brain</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/register.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Animated Background -->
+    <div class="background">
+
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+
+        <div class="grid"></div>
+
+        <div class="particles">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+    </div>
+
+
+    <div class="main-container">
+
+        <!-- ================= LEFT PANEL ================= -->
+
+        <section class="left-panel">
+
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+
+                <span>AI SECOND BRAIN</span>
+            </div>
+
+
+            <div class="hero-content">
+
+                <p class="small-title">
+                    YOUR INTELLIGENT DIGITAL MEMORY
+                </p>
+
+                <h1>
+                    AI Second
+                    <span>Brain</span>
+                </h1>
+
+                <p class="description">
+                    Store your ideas, notes, documents and memories
+                    in one intelligent place.
+                    Let AI help you remember everything that matters.
+                </p>
+
+
+                <!-- Brain Animation -->
+
+                <div class="brain-container">
+
+                    <div class="brain-ring ring1"></div>
+                    <div class="brain-ring ring2"></div>
+                    <div class="brain-ring ring3"></div>
+
+                    <div class="brain">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+
+                    <div class="floating-icon icon1">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </div>
+
+                    <div class="floating-icon icon2">
+                        <i class="fa-solid fa-message"></i>
+                    </div>
+
+                    <div class="floating-icon icon3">
+                        <i class="fa-solid fa-microphone"></i>
+                    </div>
+
+                    <div class="floating-icon icon4">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+
+                </div>
+
+
+                <div class="tagline">
+                    <span>Work Smarter</span>
+                    <b>✦</b>
+                    <span>Learn Better</span>
+                    <b>✦</b>
+                    <span>Remember Forever</span>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= RIGHT PANEL ================= -->
+
+        <section class="right-panel">
+
+            <div class="register-card">
+
+                <!-- Top Brain Icon -->
+
+                <div class="register-icon">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+
+
+                <h2>
+                    Create Your
+                    <span>Account</span>
+                </h2>
+
+                <p class="subtitle">
+                    Join AI Second Brain and start your smart journey.
+                </p>
+
+
+                <!-- Flask Form -->
+
+                <form action="{{ url_for('register') }}"
+                      method="POST"
+                      autocomplete="off">
+
+
+                    <!-- Full Name -->
+
+                    <div class="input-group">
+
+                        <label>Full Name</label>
+
+                        <div class="input-box">
+
+                            <i class="fa-regular fa-user"></i>
+
+                            <input
+                                type="text"
+                                name="fullname"
+                                placeholder="Enter your full name"
+                                required>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Email -->
+
+                    <div class="input-group">
+
+                        <label>Email Address</label>
+
+                        <div class="input-box">
+
+                            <i class="fa-regular fa-envelope"></i>
+
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Enter your email address"
+                                required>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Password -->
+
+                    <div class="input-group">
+
+                        <label>Password</label>
+
+                        <div class="input-box">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                            <input
+                                type="password"
+                                name="password"
+                                id="password"
+                                placeholder="Create a strong password"
+                                required>
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                onclick="togglePassword()">
+
+                                <i id="eyeIcon"
+                                   class="fa-regular fa-eye-slash">
+                                </i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Password Strength -->
+
+                    <div class="strength-container">
+
+                        <div class="strength-bars">
+
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+
+                        </div>
+
+                        <small id="strengthText">
+                            Password strength
+                        </small>
+
+                    </div>
+
+
+                    <!-- Register Button -->
+
+                    <button type="submit"
+                            class="register-btn">
+
+                        <span>
+                            <i class="fa-solid fa-rocket"></i>
+                            Register Now
+                        </span>
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+                </form>
+
+
+                <!-- Security -->
+
+                <div class="security-box">
+
+                    <div class="security-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <div>
+                        <strong>Your data is safe with us</strong>
+
+                        <p>
+                            We value your privacy and security
+                        </p>
+                    </div>
+
+                    <i class="fa-solid fa-lock lock-icon"></i>
+
+                </div>
+
+
+                <!-- Login -->
+
+                <div class="login-text">
+
+                    Already have an account?
+
+                    <a href="{{ url_for('login') }}">
+                        Login here
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <script>
+
+        /* ================= PASSWORD SHOW / HIDE ================= */
+
+        function togglePassword() {
+
+            const password =
+                document.getElementById("password");
+
+            const eyeIcon =
+                document.getElementById("eyeIcon");
+
+            if (password.type === "password") {
+
+                password.type = "text";
+
+                eyeIcon.classList.remove(
+                    "fa-eye-slash"
+                );
+
+                eyeIcon.classList.add(
+                    "fa-eye"
+                );
+
+            } else {
+
+                password.type = "password";
+
+                eyeIcon.classList.remove(
+                    "fa-eye"
+                );
+
+                eyeIcon.classList.add(
+                    "fa-eye-slash"
+                );
+            }
+        }
+
+
+        /* ================= PASSWORD STRENGTH ================= */
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const bars =
+            document.querySelectorAll(".strength-bars span");
+
+        const strengthText =
+            document.getElementById("strengthText");
+
+
+        passwordInput.addEventListener("input", function () {
+
+            const value = this.value;
+
+            let strength = 0;
+
+
+            if (value.length >= 6)
+                strength++;
+
+            if (/[A-Z]/.test(value))
+                strength++;
+
+            if (/[0-9]/.test(value))
+                strength++;
+
+            if (/[^A-Za-z0-9]/.test(value))
+                strength++;
+
+
+            bars.forEach(bar => {
+                bar.classList.remove("active");
+            });
+
+
+            for (let i = 0; i < strength; i++) {
+                bars[i].classList.add("active");
+            }
+
+
+            if (strength === 0) {
+
+                strengthText.innerText =
+                    "Password strength";
+
+            } else if (strength === 1) {
+
+                strengthText.innerText =
+                    "Weak password";
+
+            } else if (strength === 2) {
+
+                strengthText.innerText =
+                    "Medium password";
+
+            } else if (strength === 3) {
+
+                strengthText.innerText =
+                    "Strong password";
+
+            } else {
+
+                strengthText.innerText =
+                    "Very strong password";
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>

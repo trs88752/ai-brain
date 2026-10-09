@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Second Brain | Login</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/login.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login_overrides.css') }}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="background">
+
+<div class="overlay"></div>
+
+<div class="glass">
+
+<div class="left">
+
+<div class="brand-mark"><i class="fa-solid fa-brain"></i><span>AI SECOND BRAIN</span></div>
+
+<h1>AI Second Brain</h1>
+
+<p>
+Store Notes, PDFs, Images, AI Chats,
+Voice Notes and Smart Reminders
+in one intelligent workspace.
+</p>
+
+<div class="feature-row"><span><i class="fa-solid fa-layer-group"></i> All your knowledge</span><span><i class="fa-solid fa-wand-magic-sparkles"></i> AI-powered insights</span></div>
+
+</div>
+
+<div class="right">
+
+<form action="{{ url_for('login') }}" method="POST">
+
+<h2>Welcome Back</h2>
+
+<div class="input-box">
+
+<i class="fa-solid fa-envelope"></i>
+
+<input
+type="email"
+name="email"
+placeholder="Email Address"
+autocomplete="email"
+required>
+
+</div>
+
+<div class="input-box">
+
+<i class="fa-solid fa-lock"></i>
+
+<input
+type="password"
+name="password"
+placeholder="Password"
+autocomplete="current-password"
+required>
+
+</div>
+
+<button type="submit">
+
+Login
+
+</button>
+
+<p class="signup">
+
+Don't have an account?
+
+<a href="{{ url_for('register') }}">
+Create Account
+</a>
+
+</p>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>

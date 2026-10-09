@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Second Brain | Dashboard</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css', v='20260907') }}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+
+</head>
+<style>
+.stat-link{display:block;text-decoration:none;color:inherit;cursor:pointer}
+.reminder-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 26px;padding:16px 20px;border-radius:16px;background:linear-gradient(110deg,rgba(37,99,235,.78),rgba(8,145,178,.72));border:1px solid rgba(255,255,255,.24);box-shadow:0 12px 28px rgba(0,0,0,.24);cursor:pointer;transition:transform .2s ease,filter .2s ease}.reminder-banner:hover{transform:translateY(-2px);filter:brightness(1.08)}.reminder-banner a{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;color:#fff;text-decoration:none;font-weight:700}.reminder-banner i{color:#a7f3d0}.reminder-count{font-size:24px;color:#fff}
+html,body{background:#07111f!important}
+body{background-image:linear-gradient(120deg,rgba(4,12,30,.88),rgba(30,41,99,.78)),url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=2200&q=85')!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important}
+.sidebar{background:rgba(3,12,28,.94)!important;border-right:1px solid #28466c!important;width:275px!important}
+.main{margin-left:275px!important;padding:48px!important}
+.topbar h1{font-size:40px!important;color:#f8fafc!important}.eyebrow{color:#22d3ee!important;font-weight:700!important;letter-spacing:2px!important}.subtitle{color:#a9bdd8!important}
+.cards .card{background:linear-gradient(145deg,rgba(30,64,110,.72),rgba(15,23,42,.78))!important;border:1px solid rgba(103,232,249,.25)!important;box-shadow:0 18px 40px rgba(0,0,0,.3)!important}
+.cards .card i{color:#67e8f9!important}.quick .box{background:linear-gradient(135deg,#2563eb,#0891b2)!important;border:1px solid rgba(255,255,255,.28)!important}
+.section-heading h2{color:#fff!important}.live-pill{color:#a7f3d0!important}
+/* Dashboard action buttons — professional interactive treatment */
+.cards{gap:22px!important}
+.cards .stat-link{position:relative;overflow:hidden;min-height:168px;padding:28px!important;border-radius:20px!important;transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease!important}
+.cards .stat-link::after{content:'Open  \2192';position:absolute;right:22px;bottom:20px;color:#c8f7ff;font-size:12px;font-weight:700;letter-spacing:.35px;opacity:0;transform:translateX(-8px);transition:opacity .2s ease,transform .2s ease}
+.cards .stat-link i{display:grid!important;place-items:center;width:46px;height:46px;border-radius:14px;background:rgba(103,232,249,.13);font-size:20px!important;margin-bottom:16px!important}
+.cards .stat-link h2{font-size:34px!important;line-height:1!important;margin:0 0 10px!important;color:#fff!important}
+.cards .stat-link p{margin:0!important;color:#cbdcf4!important;font-weight:600!important}
+.cards .stat-link:hover{transform:translateY(-7px)!important;border-color:#67e8f9!important;box-shadow:0 22px 45px rgba(8,145,178,.28)!important}
+.cards .stat-link:hover::after{opacity:1;transform:translateX(0)}
+.quick{gap:16px!important}
+.quick>a{display:block;text-decoration:none;min-width:0}
+.quick .box{position:relative;display:flex!important;align-items:center;gap:14px;min-height:80px;padding:18px 20px!important;border-radius:16px!important;overflow:hidden;box-shadow:0 12px 24px rgba(2,8,23,.26)!important;transition:transform .22s ease,box-shadow .22s ease,filter .22s ease!important}
+.quick .box::after{content:'\2192';margin-left:auto;font-size:21px;font-weight:700;color:#dffaff;transition:transform .22s ease}
+.quick .box i{display:grid!important;place-items:center;width:38px;height:38px;flex:none;border-radius:11px;background:rgba(255,255,255,.17);font-size:16px!important}
+.quick .box h3{margin:0!important;color:#fff!important;font-size:15px!important;letter-spacing:.1px}
+.quick>a:hover .box{transform:translateY(-5px);filter:brightness(1.1);box-shadow:0 19px 32px rgba(8,145,178,.32)!important}
+.quick>a:hover .box::after{transform:translateX(5px)}
+.cards .stat-link:focus-visible,.quick>a:focus-visible{outline:3px solid #fef08a!important;outline-offset:4px;border-radius:20px}
+/* Distinct colours make each workspace action easier to recognize at a glance. */
+.cards .stat-link:nth-child(1){background:linear-gradient(145deg,#4c1d95,#312e81)!important;border-color:rgba(196,181,253,.5)!important}
+.cards .stat-link:nth-child(1) i{color:#ddd6fe!important;background:rgba(221,214,254,.16)!important}
+.cards .stat-link:nth-child(2){background:linear-gradient(145deg,#9f1239,#7f1d1d)!important;border-color:rgba(253,164,175,.5)!important}
+.cards .stat-link:nth-child(2) i{color:#fecdd3!important;background:rgba(254,205,211,.16)!important}
+.cards .stat-link:nth-child(3){background:linear-gradient(145deg,#0f766e,#134e4a)!important;border-color:rgba(94,234,212,.48)!important}
+.cards .stat-link:nth-child(3) i{color:#99f6e4!important;background:rgba(153,246,228,.16)!important}
+.quick>a:nth-child(1) .box{background:linear-gradient(135deg,#7c3aed,#4f46e5)!important}
+.quick>a:nth-child(2) .box{background:linear-gradient(135deg,#e11d48,#be123c)!important}
+.quick>a:nth-child(3) .box{background:linear-gradient(135deg,#0f766e,#0891b2)!important}
+.quick>a:nth-child(4) .box{background:linear-gradient(135deg,#2563eb,#7c3aed)!important}
+@media(max-width:700px){.cards .stat-link{min-height:145px;padding:22px!important}.quick .box{min-height:68px;padding:15px 16px!important}}
+@media(max-width:900px){.main{margin-left:0!important;padding:24px!important}.sidebar{width:100%!important}}
+</style>
+
+<body class="module-page module-dashboard">
+
+<div class="sidebar">
+
+<div class="logo">
+
+<h2>🧠 AI Brain</h2>
+
+</div>
+
+<ul>
+
+<li><a href="/dashboard"><i class="fa-solid fa-house"></i> Dashboard</a></li>
+
+<li><a href="/notes"><i class="fa-solid fa-note-sticky"></i> Notes</a></li>
+
+<li><a href="/pdf-library"><i class="fa-solid fa-file-pdf"></i> PDF Library</a></li>
+
+<li><a href="/image-library"><i class="fa-solid fa-image"></i> Image Library</a></li>
+
+<li><a href="/ai-chat"><i class="fa-solid fa-robot"></i> AI Chat</a></li>
+
+<li><a href="/voice-assistant"><i class="fa-solid fa-microphone"></i> Voice Assistant</a></li>
+
+<li><a href="/reminders"><i class="fa-solid fa-bell"></i> Reminders</a></li>
+
+<li><a href="/settings"><i class="fa-solid fa-gear"></i> Settings</a></li>
+
+<li><a href="/profile"><i class="fa-solid fa-user"></i> Profile</a></li>
+
+</ul>
+
+</div>
+
+<div class="main">
+
+<div class="topbar">
+
+<div><p class="eyebrow">PERSONAL KNOWLEDGE HUB</p><h1>Welcome to AI Second Brain</h1><p class="subtitle">Your notes, files and ideas — organized intelligently.</p></div>
+
+<form action="/search" method="GET" id="universalSearchForm">
+
+<input
+type="text"
+name="query"
+id="universalSearch"
+placeholder="Search Notes, PDFs, Images...">
+
+<button type="submit">
+
+<i class="fa-solid fa-magnifying-glass"></i>
+
+</button>
+
+</form>
+
+</div>
+
+<div class="reminder-banner"><a href="{{ url_for('reminders') }}"><span><i class="fa-solid fa-bell"></i> Reminders</span><span>Open your scheduled reminders&nbsp;&nbsp;<strong class="reminder-count">{{ reminders }}</strong></span></a></div>
+
+<div class="section-heading"><div><h2>Workspace overview</h2><p>Your knowledge at a glance</p></div><span class="live-pill"><i class="fa-solid fa-circle"></i> All systems ready</span></div>
+
+<div class="cards">
+
+<a class="card stat-link" href="/notes">
+
+<i class="fa-solid fa-note-sticky"></i>
+
+<h2>{{ notes }}</h2>
+
+<p>Notes</p>
+
+</a>
+
+<a class="card stat-link" href="{{ url_for('pdf_files') }}">
+
+<i class="fa-solid fa-file-pdf"></i>
+
+<h2>{{ pdfs }}</h2>
+
+<p>PDF Files</p>
+
+</a>
+
+<a class="card stat-link" href="{{ url_for('image_files') }}">
+
+<i class="fa-solid fa-image"></i>
+
+<h2>{{ images }}</h2>
+
+<p>Images</p>
+
+</a>
+
+</div>
+
+<div class="section-heading quick-heading"><div><h2>Quick actions</h2><p>Jump back into your workflow</p></div></div>
+
+<div class="quick">
+
+<a href="/create-note">
+
+<div class="box">
+
+<i class="fa-solid fa-plus"></i>
+
+<h3>Create Note</h3>
+
+</div>
+
+</a>
+
+<a href="/pdf-library">
+
+<div class="box">
+
+<i class="fa-solid fa-upload"></i>
+
+<h3>Upload PDF</h3>
+
+</div>
+
+</a>
+
+<a href="/image-library">
+
+<div class="box">
+
+<i class="fa-solid fa-image"></i>
+
+<h3>Upload Image</h3>
+
+</div>
+
+</a>
+
+<a href="/ai-chat">
+
+<div class="box">
+
+<i class="fa-solid fa-comments"></i>
+
+<h3>Ask AI</h3>
+
+</div>
+
+</a>
+
+</div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+
+<script>
+/* Wait briefly while typing, then open the matching universal search results. */
+(() => {
+  const input = document.getElementById('universalSearch');
+  const form = document.getElementById('universalSearchForm');
+  if (!input || !form) return;
+  let timer;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const query = input.value.trim();
+    if (query.length < 2) return;
+    timer = setTimeout(() => form.requestSubmit(), 500);
+  });
+})();
+</script>
+</body>
+</html>

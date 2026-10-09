@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Second Brain | Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css', v='20261004-profile-edit') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261004-settings-2') }}">
+</head>
+<body class="module-page module-profile">
+<main class="container profile-container">
+    <header class="header">
+        <div>
+            <p class="profile-eyebrow">YOUR ACCOUNT</p>
+            <h1><i class="fa-solid fa-user"></i> My Profile</h1>
+            <p class="profile-subtitle">Manage the personal details associated with your account.</p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="home"><i class="fa-solid fa-house"></i> Dashboard</a>
+    </header>
+
+    {% if profile_saved %}<p class="profile-flash success" role="status">Profile updated successfully.</p>{% endif %}
+    {% if profile_error %}<p class="profile-flash error" role="alert">{{ profile_error }}</p>{% endif %}
+
+    <section class="card profile-card">
+        <div class="profile-avatar" aria-hidden="true"><i class="fa-solid fa-user"></i></div>
+        <div class="profile-content">
+            <div class="profile-heading">
+                <div><h2>{{ user.fullname or 'AI Second Brain User' }}</h2><p class="profile-member">Personal account</p></div>
+                <button id="editProfileButton" class="profile-edit-button" type="button" aria-controls="profileEditForm" aria-expanded="{{ 'true' if edit_open else 'false' }}">
+                    <i class="fa-solid fa-pen"></i> Edit Profile
+                </button>
+            </div>
+
+            <div class="profile-details" id="profileDetails">
+                <p><i class="fa-solid fa-envelope"></i><span><small>Email</small>{{ user.email or 'Not added' }}</span></p>
+                <p><i class="fa-solid fa-phone"></i><span><small>Phone</small>{{ user.phone or 'Not added' }}</span></p>
+                <p><i class="fa-solid fa-location-dot"></i><span><small>Address</small>{{ user.address or 'Not added' }}</span></p>
+            </div>
+
+            <form id="profileEditForm" class="profile-edit-form" method="post" action="{{ url_for('profile') }}" {% if not edit_open %}hidden{% endif %}>
+                <div class="profile-form-grid">
+                    <label>Full name<input type="text" name="fullname" value="{{ user.fullname or '' }}" maxlength="120" autocomplete="name" required></label>
+                    <label>Email address<input type="email" name="email" value="{{ user.email or '' }}" maxlength="254" autocomplete="email" required></label>
+                    <label>Phone number <span>(optional)</span><input type="tel" name="phone" value="{{ user.phone or '' }}" maxlength="40" autocomplete="tel"></label>
+                    <label>Address <span>(optional)</span><input type="text" name="address" value="{{ user.address or '' }}" maxlength="200" autocomplete="street-address"></label>
+                </div>
+                <div class="profile-form-actions">
+                    <button type="button" id="cancelProfileEdit" class="profile-cancel-button">Cancel</button>
+                    <button type="submit" class="profile-save-button"><i class="fa-solid fa-floppy-disk"></i> Save changes</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script>
+(() => {
+    const form = document.getElementById('profileEditForm');
+    const toggle = document.getElementById('editProfileButton');
+    const cancel = document.getElementById('cancelProfileEdit');
+    const details = document.getElementById('profileDetails');
+    const setOpen = (open) => {
+        form.hidden = !open;
+        details.hidden = open;
+        toggle.setAttribute('aria-expanded', String(open));
+        if (open) form.querySelector('input')?.focus();
+    };
+    toggle.addEventListener('click', () => setOpen(form.hidden));
+    cancel.addEventListener('click', () => setOpen(false));
+})();
+</script>
+</body>
+</html>
