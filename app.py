@@ -99,20 +99,23 @@ class VerifiedAIHTTPAdapter(HTTPAdapter):
 
 
 def verified_ai_post(*args, **kwargs):
-    """POST to an AI provider with certificate verification left enabled."""
-    with requests.Session() as client:
-        client.mount("https://", VerifiedAIHTTPAdapter())
-        return client.post(*args, **kwargs)
+    """POST to an AI provider using verified, platform-appropriate TLS."""
+    kwargs["verify"] = True
+    if os.name == "nt" and WINDOWS_SERVER_CA_PEMS:
+        with requests.Session() as client:
+            client.mount("https://", VerifiedAIHTTPAdapter())
+            return client.post(*args, **kwargs)
+    return requests.post(*args, **kwargs)
 
 
 def create_genai_client(api_key, timeout_ms=None):
-    """Create Gemini client with certificate verification enabled."""
+    """Create Gemini client with verified platform TLS and a request timeout."""
+    http_options = {"timeout": timeout_ms}
+    if os.name == "nt":
+        http_options["client_args"] = {"verify": AI_SSL_CONTEXT}
     return genai.Client(
         api_key=api_key,
-        http_options=genai_types.HttpOptions(
-            client_args={"verify": AI_SSL_CONTEXT},
-            timeout=timeout_ms,
-        ),
+        http_options=genai_types.HttpOptions(**http_options),
     )
 
 GEMINI_KEYS = [
@@ -1974,12 +1977,18 @@ def api_chat():
         try:
             client = create_genai_client(api_key, timeout_ms=20000)
             ai_result = client.models.generate_content(model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"), contents=(f"""Answer naturally and clearly. {language_rule}
-Return a concise but complete answer by default; add detail only when the question asks for it. Begin with the short heading {language_heading}; keep all headings in Tamil when Tamil is selected; use numbered steps for procedures and bullets for facts; make key terms **bold**; use *italic* sparingly; use __underline__ for only one critical item when it helps; put each idea on its own readable line. Add a simple fenced text diagram only when a flow, comparison, hierarchy, or relationship needs one. Use emojis only when they improve clarity. Never return raw hashtags, a dense paragraph, or unsafe HTML.\n\nQuestion: {message}"""), config=genai_types.GenerateContentConfig(temperature=0.2, max_output_tokens=900))
+Return a concise but complete answer by default; add detail only when the question asks for it. Begin with the short heading {language_heading}; keep all headings in Tamil when Tamil is selected; use numbered steps for procedures and bullets for facts; make key terms **bold**; use *italic* sparingly; use __underline__ for only one critical item when it helps; put each idea on its own readable line. Add a simple fenced text diagram only when a flow, comparison, hierarchy, or relationship needs one. Use emojis only when they improve clarity. Never return raw hashtags, a dense paragraph, or unsafe HTML.\n\nQuestion: {message}"""), config=genai_types.GenerateContentConfig(max_output_tokens=900))
             response = (ai_result.text or "").strip()
             if response:
                 break
         except Exception as error:
             errors.append(f"Gemini unavailable: {type(error).__name__}")
+            status = getattr(error, "status_code", None) or getattr(error, "code", None)
+            app.logger.warning(
+                "Gemini chat request failed (type=%s, status=%s)",
+                type(error).__name__,
+                status if status is not None else "unknown",
+            )
 
     if not response:
         # Accept both common spellings: Groq (official) and legacy GROK names.
@@ -1993,10 +2002,32 @@ Return a concise but complete answer by default; add detail only when the questi
                 if result.ok:
                     response = (result.json().get("choices", [{}])[0].get("message", {}).get("content") or "").strip()
                     if response: break
+                error_code = None
+                try:
+                    error_body = result.json().get("error", {})
+                    if isinstance(error_body, dict):
+                        error_code = error_body.get("code") or error_body.get("type")
+                except (AttributeError, ValueError):
+                    pass
                 errors.append(f"Groq HTTP {result.status_code}")
+                app.logger.warning(
+                    "Groq chat request failed (status=%s, code=%s)",
+                    result.status_code,
+                    error_code or "unknown",
+                )
             except Exception as error:
                 errors.append(f"Groq unavailable: {type(error).__name__}")
+                status = getattr(error, "status_code", None) or getattr(error, "code", None)
+                app.logger.warning(
+                    "Groq chat request failed (type=%s, status=%s)",
+                    type(error).__name__,
+                    status if status is not None else "unknown",
+                )
     if not response:
+        app.logger.error(
+            "AI chat providers exhausted: %s",
+            ", ".join(errors) if errors else "no configured provider keys or empty provider responses",
+        )
         response = provider_unavailable_response(language, message)
 
     # A response should still reach the user if history storage is temporarily locked.
