@@ -81,3 +81,34 @@ body.module-page.font-size-small{font-size:14px!important}
 body.module-page.font-size-small :is(p,li,label,.date,.meta,.count,.empty,.notice,.settings-status,.about-features span,button,.btn,input,textarea,select){font-size:.92em!important}
 body.module-page.font-size-large{font-size:17px!important}
 body.module-page.font-size-large :is(p,li,label,.date,.meta,.count,.empty,.notice,.settings-status,.about-features span,button,.btn,input,textarea,select){font-size:1.08em!important;line-height:1.75}
+
+/* Responsive layout guardrails shared by every module on tablets and phones. */
+html,body.module-page{max-width:100%;overflow-x:clip}
+body.module-page .container,body.module-page .page{box-sizing:border-box;min-width:0}
+body.module-page img,body.module-page video,body.module-page canvas,body.module-page iframe{max-width:100%}
+body.module-page input,body.module-page textarea,body.module-page select,body.module-page button{max-width:100%;min-width:0}
+body.module-page pre,body.module-page code,body.module-page .markdown-response,body.module-page .pdf-answer,body.module-page .image-answer{overflow-wrap:anywhere}
+body.module-page table{max-width:100%;display:block;overflow-x:auto}
+@media(max-width:900px){
+  .app-sidebar{position:relative;inset:auto;width:100%;max-width:100vw;min-width:0;flex:0 0 auto}
+  .app-sidebar nav{display:flex;flex-wrap:nowrap;gap:4px;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .app-sidebar nav a{flex:0 0 auto;min-height:44px;white-space:nowrap}
+  body.app-shell-page .container,body.app-shell-page .page{width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important;padding:24px 18px!important}
+  body.module-page .header,body.module-page .top{min-width:0;flex-wrap:wrap;gap:12px}
+  body.module-page .header h1,body.module-page .top h1{max-width:100%;overflow-wrap:anywhere}
+  body.module-page .section-heading,body.module-page .heading{min-width:0;flex-wrap:wrap;gap:10px}
+  body.module-page .grid,body.module-page .notes-grid,body.module-page .pdf-grid,body.module-page .image-grid,body.module-page .reminder-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+}
+@media(max-width:600px){
+  .app-sidebar{padding:10px 12px}
+  .app-brand{padding:2px 0 10px;font-size:12px}
+  .app-sidebar nav a{padding:9px 10px;font-size:13px}
+  body.app-shell-page .container,body.app-shell-page .page{padding:20px 14px!important}
+  body.module-page .header,body.module-page .top{align-items:flex-start!important;flex-direction:column;gap:12px!important;padding:16px 0 18px!important;margin-bottom:20px!important}
+  body.module-page .header h1,body.module-page .top h1{font-size:25px!important;line-height:1.2}
+  body.module-page .home,body.module-page .back{align-self:flex-start;max-width:100%;margin-left:0!important}
+  body.module-page .card,body.module-page .pdf-card,body.module-page .image-card,body.module-page .note-card,body.module-page .reminder-card,body.module-page .section,body.module-page .settings-card{padding:16px!important}
+  body.module-page .messages{padding:12px!important}
+  body.module-page .chat-form{flex-direction:column;gap:10px}
+  body.module-page .chat-form input,body.module-page .chat-form button{width:100%}
+}
