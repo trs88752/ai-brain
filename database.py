@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import time
 
 # Keep the database beside this project, regardless of the directory used to start Flask.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +19,29 @@ def create_database():
 
     conn = get_connection()
     cursor = conn.cursor()
+
+    # Back up and verify the database before the additive PDF-history migration.
+    # This check is before all schema statements so existing data is preserved.
+    pdf_chat_history_exists = cursor.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='pdf_chat_history'"
+    ).fetchone()
+    if pdf_chat_history_exists is None:
+        backup_path = f"{DATABASE}.pre-pdf-chat-history-{time.time_ns()}.bak"
+        backup_conn = sqlite3.connect(backup_path)
+        try:
+            conn.backup(backup_conn)
+            integrity = backup_conn.execute("PRAGMA quick_check").fetchone()
+            if not integrity or integrity[0] != "ok":
+                raise sqlite3.DatabaseError(
+                    "Pre-migration database backup failed its integrity check."
+                )
+            if not os.path.isfile(backup_path) or os.path.getsize(backup_path) == 0:
+                raise sqlite3.DatabaseError(
+                    "Pre-migration database backup is missing or empty."
+                )
+        finally:
+            backup_conn.close()
+        print(f"Verified pre-migration database backup created: {backup_path}")
 
     # =========================
     # USERS
@@ -63,6 +87,20 @@ def create_database():
         filename TEXT NOT NULL,
         original_name TEXT,
         uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+    )
+    """)
+
+    # PDF Q&A history; CREATE IF NOT EXISTS keeps existing rows and tables intact.
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS pdf_chat_history(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pdf_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(pdf_id) REFERENCES pdfs(id),
         FOREIGN KEY(user_id) REFERENCES users(id)
     )
     """)
