@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+    {% include "_pwa_head.html" %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Second Brain | AI Assistant</title>
@@ -20,7 +21,7 @@
     .answer strong { color: #67e8f9; text-decoration: underline; text-underline-offset: 3px; }
     .back { float: right; color: #111827; background: #fff; padding: 10px; border-radius: 9px; text-decoration: none; }
   </style>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-mobile-1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-pwa-1') }}">
   <script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
 </head>
 <body class="module-page module-voice">
@@ -105,6 +106,6 @@
 
     stop.onclick = () => { speechSynthesis.cancel(); stop.hidden = true; status.textContent = 'Voice stopped.'; };
   </script>
-<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-pwa-1') }}"></script>
 </body>
 </html>

@@ -140,6 +140,21 @@ GROK_KEYS = [
 
 app = Flask(__name__)
 
+@app.route("/manifest.webmanifest")
+def pwa_manifest():
+    response = app.send_static_file("manifest.webmanifest")
+    response.headers["Content-Type"] = "application/manifest+json; charset=utf-8"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
+@app.route("/service-worker.js")
+def pwa_service_worker():
+    response = app.send_static_file("service-worker.js")
+    response.headers["Content-Type"] = "application/javascript; charset=utf-8"
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or "dev-only-change-me-before-deploy"
 
 # Session configuration

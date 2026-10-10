@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    {% include "_pwa_head.html" %}
 
 <meta charset="UTF-8">
 
@@ -13,7 +14,7 @@ content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet"
 href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-mobile-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-pwa-1') }}">
 <script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
 
 <style>
@@ -257,7 +258,7 @@ stopAnswer.onclick=()=>{if(synth)synth.cancel();stopAnswer.hidden=true;voiceStat
 
 </div>
 
-<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-pwa-1') }}"></script>
 </body>
 
 </html>

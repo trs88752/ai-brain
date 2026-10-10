@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include "_pwa_head.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Second Brain | Profile</title>
@@ -8,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css', v='20261004-profile-edit') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-mobile-1') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-pwa-1') }}">
 </head>
 <body class="module-page module-profile">
 <main class="container profile-container">
@@ -56,7 +57,7 @@
     </section>
 </main>
 
-<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-pwa-1') }}"></script>
 <script>
 (() => {
     const form = document.getElementById('profileEditForm');

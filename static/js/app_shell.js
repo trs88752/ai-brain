@@ -56,7 +56,7 @@
     ];
     const sidebar = document.createElement('aside');
     sidebar.className = 'app-sidebar';
-    sidebar.innerHTML = `<a class="app-brand" href="/dashboard"><span>✦</span><div>AI SECOND BRAIN<small>Personal knowledge hub</small></div></a><nav>${items.map(([url, icon, label]) => `<a class="${current === url ? 'active' : ''}" href="${url}"><i class="fa-solid ${icon}"></i><span>${label}</span></a>`).join('')}</nav><div class="app-sidebar-footer"><i class="fa-solid fa-circle"></i> System ready</div>`;
+    sidebar.innerHTML = `<a class="app-brand" href="/dashboard"><img class="app-brand-logo" src="/static/images/app-logo-mark.png?v=20261010-pwa-1" alt=""><div>AI SECOND BRAIN<small>Personal knowledge hub</small></div></a><nav>${items.map(([url, icon, label]) => `<a class="${current === url ? 'active' : ''}" href="${url}"><i class="fa-solid ${icon}"></i><span>${label}</span></a>`).join('')}</nav><div class="app-sidebar-footer"><i class="fa-solid fa-circle"></i> System ready</div>`;
     const chatHistoryTools = document.getElementById('aiChatSidebarTools');
     if (current === '/ai-chat' && chatHistoryTools) {
       chatHistoryTools.hidden = false;

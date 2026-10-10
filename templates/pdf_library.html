@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    {% include "_pwa_head.html" %}
 
     <meta charset="UTF-8">
 
@@ -31,7 +32,7 @@
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/pdf.css') }}">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-mobile-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-pwa-1') }}">
 <style>
     /* Keep the per-PDF AI action visible beside Open, Download and Delete. */
     .buttons .ask-ai-btn {
@@ -614,7 +615,7 @@ function selectFromEmpty(input) {
 </script>
 
 
-<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-pwa-1') }}"></script>
 </body>
 
 </html>

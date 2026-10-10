@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    {% include "_pwa_head.html" %}
 
 <meta charset="UTF-8">
 
@@ -18,7 +19,7 @@
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-mobile-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-pwa-1') }}">
 
 </head>
 <style>
@@ -72,7 +73,7 @@ body{background-image:linear-gradient(120deg,rgba(4,12,30,.88),rgba(30,41,99,.78
 
 <div class="logo">
 
-<h2>🧠 AI Brain</h2>
+<h2><img src="{{ url_for('static', filename='images/app-logo-mark.png', v='20261010-pwa-1') }}" alt=""> AI Second Brain</h2>
 
 </div>
 
@@ -218,7 +219,7 @@ placeholder="Search Notes, PDFs, Images...">
 
 </div>
 
-<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-mobile-1') }}"></script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-pwa-1') }}"></script>
 
 <script>
 /* Wait briefly while typing, then open the matching universal search results. */

@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    {% include "_pwa_head.html" %}
 
 <meta charset="UTF-8">
 
@@ -19,7 +20,7 @@ href="{{ url_for('static', filename='css/images.css') }}">
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-mobile-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-pwa-1') }}">
 <script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
 </head>
 
@@ -176,7 +177,7 @@ document.addEventListener('click',event=>{const form=event.target.closest('.ask-
 
 </div>
 
-<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-pwa-1') }}"></script>
 </body>
 
 </html>

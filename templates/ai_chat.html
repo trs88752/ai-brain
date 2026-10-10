@@ -1,13 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+    {% include "_pwa_head.html" %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Second Brain | AI Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
     <script src="{{ url_for('static', filename='js/ai_formatter.js', v='20260928') }}"></script>
 </head>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-mobile-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module_ui.css', v='20261010-pwa-1') }}">
 <body class="module-page module-chat">
 <div class="container">
     <div class="header">
@@ -181,6 +182,6 @@ form.addEventListener("submit", async (event) => {
 listenAnswer.onclick=()=>{if(!synth||!window.SpeechSynthesisUtterance){status.textContent='This in-app browser cannot play speech. Open AI Second Brain in Chrome or Edge to hear answers.';return;}if(!latestAnswer)return;synth.cancel();const locale=speechLanguage(latestAnswer),voice=preferredVoice(locale);if(locale==='ta-IN'&&!voice){status.textContent='Tamil voice is installed, but this browser has not loaded it yet. Restart Chrome or Edge and try again.';return;}stopAnswer.hidden=false;const u=new SpeechSynthesisUtterance(latestAnswer);u.lang=locale;u.voice=voice;u.rate=.9;u.onend=()=>stopAnswer.hidden=true;u.onerror=()=>stopAnswer.hidden=true;synth.speak(u);};
 stopAnswer.onclick=()=>{if(synth)synth.cancel();stopAnswer.hidden=true;status.textContent='Voice stopped.';};
 </script>
-<script src="{{ url_for('static', filename='js/app_shell.js', v='20261004-settings-2') }}"></script>
+<script src="{{ url_for('static', filename='js/app_shell.js', v='20261010-pwa-1') }}"></script>
 </body>
 </html>
